@@ -58,14 +58,14 @@ class CharDecoder(nn.Module):
         if dec_hidden:
             h_0, c_0 = dec_hidden
         else:
-            h_0 = torch.zeros((1, batch_size, self.hidden_size), device = torch.device('cpu'))
-            c_0 = torch.zeros((1,batch_size, self.hidden_size), device = torch.device('cpu'))
+            h_0 = torch.zeros((1, batch_size, self.hidden_size))
+            c_0 = torch.zeros((1,batch_size, self.hidden_size))
 
         o_t, (h_t, c_t) = self.charDecoder(x, (h_0, c_0))
-        o_t = self.char_output_projection(o_t)
+        s_t = self.char_output_projection(o_t)
 
         dec_hidden = (h_t, c_t)
-        return o_t, dec_hidden
+        return s_t, dec_hidden
         ### END YOUR CODE
 
 
@@ -123,40 +123,36 @@ class CharDecoder(nn.Module):
         ###        Their indices are self.target_vocab.start_of_word and self.target_vocab.end_of_word, respectively.
 
 
-
         _, batch_size, hidden_size = initialStates[0].size()
         start_token_id = self.target_vocab.char2id['{']
         end_token = '}'
         end_token_id = self.target_vocab.char2id[end_token]
-        inpt = torch.zeros(1,batch_size,dtype=torch.long)
-        inpt[0,:] = start_token_id
+
+        inpt = torch.empty(1, batch_size, dtype=torch.long).fill_(start_token_id)
+
         h_t, c_t = initialStates
-        out_word = [[] for i in range(batch_size)]
+        out_word = ["" for i in range(batch_size)]
         for i in range(max_length):
-            o_t, (h_t1, c_t1) = self.forward(inpt, (h_t,c_t))
-            p_t1 = torch.nn.functional.softmax(o_t,dim=2)
-
-            dd = torch.argmax(p_t1,dim=2).numpy().squeeze()
-            out_char = [self.target_vocab.id2char[val] for i,val in enumerate(dd)]
+            s_t, (h_t1, c_t1) = self.forward(inpt, (h_t,c_t))
+            p_t1 = torch.nn.functional.softmax(s_t,dim=-1)
+            pred_chars = torch.argmax(p_t1,dim=-1).numpy()
+            assert(len(pred_chars)==1)
+            for i_b, b_val in enumerate(pred_chars[0]):
+                out_word[i_b] += self.target_vocab.id2char[b_val]
             h_t, c_t = h_t1, c_t1
-            [out_word[i].append(val) for i, val in enumerate(out_char)]
-        ### END YOUR CODE
+            inpt = torch.tensor(pred_chars, dtype=torch.long)
 
-        out_word[0][2]='}'
+        ### END YOUR CODE
         # post_process.
-        def clean_words(out_word1):
+        def clean_words(tmp_words):
             """ for each batch purge the list once end token is seen
             @returns purged out_word
             """
-            new_out_word = [[] for i in range(len(out_word))]
-            for i, word in enumerate(out_word1):
-                tmp_word = []
-                for j, char in enumerate(word):
-                    if char == end_token:
-                        break
-                    tmp_word.append(char)
-                new_out_word[i] = tmp_word
-            return new_out_word
+            new_words = []
+            for i, word in enumerate(tmp_words):
+                ind = word.find(end_token)
+                new_words.append(word[:ind])
+            return new_words
 
         new_out_word = clean_words(out_word)
         return new_out_word
