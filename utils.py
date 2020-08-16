@@ -43,7 +43,11 @@ def pad_sents_char(sents, char_pad_token):
 
         for i,word in enumerate(sentence):
             for j, char in enumerate(word):
+                if (j==max_word_length):
+                    sentences_pad[i][j-1] = word[-1] # last one is end token
+                    break
                 sentences_pad[i][j] = char
+
         sents_padded.append(sentences_pad)
     ### END YOUR CODE
 
