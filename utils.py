@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import math
@@ -8,33 +7,44 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import ipdb
 
 def pad_sents_char(sents, char_pad_token):
     """ Pad list of sentences according to the longest sentence in the batch and max_word_length.
-    @param sents (list[list[list[int]]]): list of sentences, result of `words2charindices()` 
+    @param sents (list[list[list[int]]]): list of sentences, result of `words2charindices()`
         from `vocab.py`
     @param char_pad_token (int): index of the character-padding token
     @returns sents_padded (list[list[list[int]]]): list of sentences where sentences/words shorter
         than the max length sentence/word are padded out with the appropriate pad token, such that
-        each sentence in the batch now has same number of words and each word has an equal 
+        each sentence in the batch now has same number of words and each word has an equal
         number of characters
         Output shape: (batch_size, max_sentence_length, max_word_length)
     """
     # Words longer than 21 characters should be truncated
-    max_word_length = 21 
-
+    max_word_length = 21
+    sentence_lengths = [len(sent) for sent in sents]
+    max_sentence_length = max(sentence_lengths)
     ### YOUR CODE HERE for part 1b
     ### TODO:
-    ###     Perform necessary padding to the sentences in the batch similar to the pad_sents() 
-    ###     method below using the padding character from the arguments. You should ensure all 
-    ###     sentences have the same number of words and each word has the same number of 
-    ###     characters. 
-    ###     Set padding words to a `max_word_length` sized vector of padding characters.  
+    ###     Perform necessary padding to the sentences in the batch similar to the pad_sents()
+    ###     method below using the padding character from the arguments. You should ensure all
+    ###     sentences have the same number of words and each word has the same number of
+    ###     characters.
+    ###     Set padding words to a `max_word_length` sized vector of padding characters.
     ###
-    ###     You should NOT use the method `pad_sents()` below because of the way it handles 
+    ###     You should NOT use the method `pad_sents()` below because of the way it handles
     ###     padding and unknown words.
 
+    sents_padded = []
+    for sentence in sents:
+        # why is this wrong - it is same object represented multiple times. not a new list
+        # sentences_pad = [[char_pad_token] * max_word_length] * max_sentence_length
+        sentences_pad = [[char_pad_token] * max_word_length for i in range(max_sentence_length)]
 
+        for i,word in enumerate(sentence):
+            for j, char in enumerate(word):
+                sentences_pad[i][j] = char
+        sents_padded.append(sentences_pad)
     ### END YOUR CODE
 
     return sents_padded
@@ -102,4 +112,3 @@ def batch_iter(data, batch_size, shuffle=False):
         tgt_sents = [e[1] for e in examples]
 
         yield src_sents, tgt_sents
-
