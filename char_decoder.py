@@ -128,19 +128,19 @@ class CharDecoder(nn.Module):
         end_token = '}'
         end_token_id = self.target_vocab.char2id[end_token]
 
-        inpt = torch.empty(1, batch_size, dtype=torch.long).fill_(start_token_id)
+        inpt = torch.empty((1, batch_size), device=device, dtype=torch.long).fill_(start_token_id)
 
         h_t, c_t = initialStates
         out_word = ["" for i in range(batch_size)]
         for i in range(max_length):
             s_t, (h_t1, c_t1) = self.forward(inpt, (h_t,c_t))
             p_t1 = torch.nn.functional.softmax(s_t,dim=-1)
-            pred_chars = torch.argmax(p_t1,dim=-1).numpy()
+            pred_chars = torch.argmax(p_t1,dim=-1)
             assert(len(pred_chars)==1)
             for i_b, b_val in enumerate(pred_chars[0]):
-                out_word[i_b] += self.target_vocab.id2char[b_val]
+                out_word[i_b] += self.target_vocab.id2char[b_val.item()]
             h_t, c_t = h_t1, c_t1
-            inpt = torch.tensor(pred_chars, dtype=torch.long)
+            inpt = pred_chars #torch.tensor(pred_chars, device=device, dtype=torch.long)
 
         ### END YOUR CODE
         # post_process.
