@@ -34,7 +34,7 @@ class CharDecoder(nn.Module):
         self.char_embedding_size = char_embedding_size
 
         self.char_output_projection = nn.Linear(hidden_size, self.vocab_len)
-        self.decoderCharEmb = nn.Embedding(self.vocab_len, char_embedding_size)
+        self.decoderCharEmb = nn.Embedding(self.vocab_len, char_embedding_size, padding_idx = self.pad_token)
         self.target_vocab = target_vocab
 
         ### END YOUR CODE
@@ -83,12 +83,11 @@ class CharDecoder(nn.Module):
         ###       - char_sequence corresponds to the sequence x_1 ... x_{n+1} from the handout (e.g., <START>,m,u,s,i,c,<END>)
 
         length, batch = char_sequence.size()
-
         #target = torch.zeros((length-1,batch))
         input_decoder = char_sequence[:-1,:]
         s_t, (dec_hidden) = self.forward(input_decoder, dec_hidden)
         s_t = s_t.reshape(-1,self.vocab_len)
-        loss_fn = nn.CrossEntropyLoss(ignore_index=self.pad_token)
+        loss_fn = nn.CrossEntropyLoss(ignore_index=self.pad_token, reduction='sum')
         target = char_sequence[1:,:].reshape(-1)
         loss = loss_fn(s_t, target)
         if DEBUG:
