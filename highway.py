@@ -11,7 +11,6 @@ from docopt import docopt
 import torch
 import torch.nn.functional as F
 import numpy as np
-import ipdb
 import sys
 
 ### YOUR CODE HERE for part 1d
@@ -43,7 +42,6 @@ class Highway(torch.nn.Module):
 
 
 def test_forward():
-    ipdb.set_trace()
     dtype = torch.float
     device = torch.device("cpu")
     batch_size = 3
@@ -56,8 +54,6 @@ def test_forward():
 
     # manual define wproj and wgate and input and know expected output.
     # not doing that.
-
-    ipdb.set_trace()
     y = highway_net.forward(x)
 
     assert y.shape == (batch_size, max_sentence_length, word_embedding), "shape mismatch. expected:{} output:{}".format((batch_size, max_sentence_length, word_embedding), y.shape)

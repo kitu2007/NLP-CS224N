@@ -16,7 +16,6 @@ from char_decoder import CharDecoder
 Hypothesis = namedtuple('Hypothesis', ['value', 'score'])
 
 import random
-import ipdb
 
 class NMT(nn.Module):
     """ Simple Neural Machine Translation Model:

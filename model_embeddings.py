@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import torch.nn as nn
-import ipdb
 
 # Do not change these imports; your module names should be
 #   `CNN` in the file `cnn.py`

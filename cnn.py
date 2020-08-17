@@ -5,7 +5,6 @@
 
 import torch
 import torch.nn.functional as F
-import ipdb
 import numpy as np
 
 
@@ -50,7 +49,6 @@ def test_forward():
     e_word = 11
     k = 3
 
-    ipdb.set_trace()
     charNet = CNN(e_char, e_word)
     x = torch.randn((batch_size, e_char, m_word), dtype=dtype, device=device)
     y = charNet.forward(x)
